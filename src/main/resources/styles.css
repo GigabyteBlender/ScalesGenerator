@@ -1,0 +1,154 @@
+/* Modern Piano Key Styles */
+.piano-key {
+    -fx-stroke: rgba(0, 0, 0, 0.3);
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 4, 0, 0, 2);
+}
+
+.white-key {
+    -fx-fill: linear-gradient(to bottom, #ffffff, #f9f9f9);
+}
+
+.black-key {
+    -fx-fill: linear-gradient(to bottom, #222222, #111111);
+}
+
+.active-key {
+    -fx-fill: linear-gradient(to bottom, #5e9fff, #3b7ddc);
+}
+
+/* Modern Control Panel Styles */
+.combo-box-styled {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 3, 0, 0, 1);
+    -fx-font-size: 14px;
+    -fx-padding: 6;
+}
+
+.combo-box-styled:hover {
+    -fx-border-color: #c0c0c0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 4, 0, 0, 1);
+}
+
+.combo-box-styled:focused {
+    -fx-border-color: #5e9fff;
+}
+
+.combo-box-styled .list-cell {
+    -fx-padding: 6 12;
+}
+
+.combo-box-styled .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.combo-box-styled .arrow {
+    -fx-background-color: #666666;
+}
+
+.combo-box-styled .list-view {
+    -fx-background-color: white;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 8, 0, 0, 2);
+}
+
+.generate-button {
+    -fx-background-color: linear-gradient(to bottom, #5e9fff, #3b7ddc);
+    -fx-text-fill: white;
+    -fx-font-weight: normal;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 12 24;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 4, 0, 0, 1);
+    -fx-font-size: 14px;
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", Arial, sans-serif;
+}
+
+.generate-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #70aaff, #4c8de3);
+    -fx-cursor: hand;
+}
+
+.generate-button:pressed {
+    -fx-background-color: #3b7ddc;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 2, 0, 0, 0);
+}
+
+.control-label {
+    -fx-font-weight: normal;
+    -fx-text-fill: #444444;
+    -fx-font-size: 14px;
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", Arial, sans-serif;
+}
+
+.piano-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-padding: 15;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 6, 0, 0, 2);
+}
+
+.piano-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.piano-scroll-pane .scroll-bar:horizontal {
+    -fx-background-color: #f8f8f8;
+    -fx-pref-height: 10;
+    -fx-background-radius: 8;
+}
+
+.piano-scroll-pane .scroll-bar:horizontal .thumb {
+    -fx-background-color: #c0c0c0;
+    -fx-background-radius: 5;
+}
+
+.piano-scroll-pane .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: #a0a0a0;
+}
+
+.piano-scroll-pane .scroll-bar .increment-button,
+.piano-scroll-pane .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 6;
+}
+
+.piano-scroll-pane .scroll-bar .increment-arrow,
+.piano-scroll-pane .scroll-bar .decrement-arrow {
+    -fx-background-color: #888888;
+    -fx-effect: null;
+}
+
+/* Overall application styling */
+.root {
+    -fx-background-color: #EAE9E1;
+    -fx-font-family: "Segoe UI", "SF Pro Text", Arial, sans-serif;
+}
+
+.title-text {
+    -fx-font-size: 26px;
+    -fx-font-family: "Segoe UI Light", "SF Pro Display Light", Arial, sans-serif;
+    -fx-fill: #3b7ddc;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 1, 0, 0, 1);
+}
+
+.scale-info-text {
+    -fx-font-size: 15px;
+    -fx-fill: #444444;
+    -fx-font-weight: normal;
+}
+
+.scale-info-box {
+    -fx-background-color: rgba(94, 159, 255, 0.08);
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(94, 159, 255, 0.2);
+    -fx-border-radius: 8;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 3, 0, 0, 1);
+}
