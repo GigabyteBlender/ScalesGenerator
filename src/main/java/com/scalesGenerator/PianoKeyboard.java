@@ -65,18 +65,18 @@ public class PianoKeyboard extends Pane {
         // Save the active notes for future reference
         this.activeNotes = new HashSet<>(notes);
 
-        // First reset all keys
-        keys.forEach((name, key) -> key.setActive(false));
-
-        // Then highlight the ones in the scale
-        for (String note : notes) {
-            if (keys.containsKey(note)) {
-                keys.get(note).setActive(true);
-            }
-        }
+        // Update all keys to match the current scale
+        applyScaleHighlighting();
     }
 
-    // Method to refresh all keys synchronously
+    // Apply the current scale highlighting to all keys
+    private void applyScaleHighlighting() {
+        keys.forEach((name, key) -> {
+            key.setActive(activeNotes.contains(name));
+        });
+    }
+
+    // Method to refresh all keys (e.g. after regaining window focus)
     public void refreshAllKeys() {
         // Ensure we're on the JavaFX application thread
         if (!Platform.isFxApplicationThread()) {
@@ -84,20 +84,8 @@ public class PianoKeyboard extends Pane {
             return;
         }
 
-        // First, reset all keys to their default state
-        keys.forEach((name, key) -> key.setActive(false));
-
-        // Then reapply active states based on stored activeNotes
-        if (activeNotes != null && !activeNotes.isEmpty()) {
-            for (String note : activeNotes) {
-                if (keys.containsKey(note)) {
-                    keys.get(note).setActive(true);
-                }
-            }
-        }
-
-        // Force a visual refresh
-        this.requestLayout();
+        // Simply reapply the current scale highlighting
+        applyScaleHighlighting();
     }
 
     // Legacy method for backward compatibility
