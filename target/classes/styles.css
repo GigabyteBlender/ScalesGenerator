@@ -56,26 +56,37 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 8, 0, 0, 2);
 }
 
-.generate-button {
+/* Enhanced Generate Button Style */
+.button-primary {
     -fx-background-color: linear-gradient(to bottom, #5e9fff, #3b7ddc);
     -fx-text-fill: white;
     -fx-font-weight: normal;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
-    -fx-padding: 12 24;
+    -fx-padding: 8 20;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 4, 0, 0, 1);
     -fx-font-size: 14px;
     -fx-font-family: "Segoe UI Semibold", "Segoe UI", Arial, sans-serif;
-}
-
-.generate-button:hover {
-    -fx-background-color: linear-gradient(to bottom, #70aaff, #4c8de3);
     -fx-cursor: hand;
+    -fx-border-color: #4c8de3;
+    -fx-border-width: 0 0 2 0;
 }
 
-.generate-button:pressed {
+.button-primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #70aaff, #4c8de3);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 0, 2);
+}
+
+.button-primary:pressed {
     -fx-background-color: #3b7ddc;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 2, 0, 0, 0);
+    -fx-translate-y: 1px;
+}
+
+.button-primary:focused {
+    -fx-border-color: #2d6dc7;
+    -fx-border-width: 0 0 2 0;
+    -fx-effect: dropshadow(gaussian, rgba(59, 125, 220, 0.4), 5, 0, 0, 0);
 }
 
 .control-label {

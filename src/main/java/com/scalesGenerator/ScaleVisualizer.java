@@ -14,6 +14,8 @@ import javafx.scene.text.Text;
 import javafx.scene.effect.DropShadow;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
@@ -25,274 +27,325 @@ public class ScaleVisualizer extends Application {
     private PianoKeyboard piano;
     private ComboBox<String> keySelector;
     private ComboBox<String> scaleTypeSelector;
-    private ComboBox<Integer> octaveSelector;  // New selector for octave
-    private CheckBox multiOctaveCheckBox;      // New checkbox for multi-octave display
+    private ComboBox<Integer> octaveSelector;
+    private CheckBox multiOctaveCheckBox;
     private Text scaleInfoText;
     private String currentRootNote;
     private String currentScaleType;
-    private int currentOctave;                 // New field for octave
-    private boolean displayMultiOctave;        // New field for multi-octave display
+    private int currentOctave;
+    private boolean displayMultiOctave;
     private Set<String> currentScaleNotes;
-    private Button playScaleButton;            // New button to play scale
-
+    private Button playScaleButton;
+    private Slider tempoSlider;
     @Override
     public void start(Stage stage) {
-        // Create a proper layout with controls at the top and piano below
+        // Create a modern layout with a content container
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(15));
 
-        // Increased window size to accommodate larger keyboard
-        Scene scene = new Scene(root, 910, 600);
+        // Apply a modern look with subtle background gradient
+        root.setStyle("-fx-background-color: linear-gradient(to bottom right, #f8f9fa, #e9ecef);");
+
+        // Add padding around the entire UI
+        root.setPadding(new Insets(20));
+
+        // Create a responsive scene with improved size
+        Scene scene = new Scene(root, 1340, 730);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
-        // Create a title with better styling
-        Text titleText = new Text("Piano Scale Visualizer");
-        titleText.getStyleClass().add("title-text");
+        // Create a stylish header with logo
+        HBox header = createHeader();
 
-        HBox titleBox = new HBox(titleText);
-        titleBox.setPadding(new Insets(10, 0, 20, 0));
-        titleBox.setAlignment(Pos.CENTER);
+        // Create a content container with shadow effect
+        VBox contentContainer = new VBox(20);
+        contentContainer.setPadding(new Insets(0, 0, 20, 0));
 
-        // Setup controls in a clearly separated area with a more modern look
-        VBox controlArea = createControlArea();
+        // Create the control panel with improved layout
+        VBox controlPanel = createControlPanel();
+        controlPanel.getStyleClass().add("control-panel");
 
-        // Create a scale information display area with better styling
-        scaleInfoText = new Text();
-        scaleInfoText.getStyleClass().add("scale-info-text");
+        // Create the scale information display
+        HBox scaleInfoBox = createScaleInfoBox();
 
-        HBox scaleInfoBox = new HBox(scaleInfoText);
-        scaleInfoBox.getStyleClass().add("scale-info-box");
-        scaleInfoBox.setPadding(new Insets(12));
-        scaleInfoBox.setAlignment(Pos.CENTER);
-        scaleInfoBox.setMaxWidth(Double.MAX_VALUE);
+        // Create piano container with shadow
+        VBox pianoContainer = createPianoContainer();
+        pianoContainer.getStyleClass().add("piano-container");
 
-        // Container for title and controls
-        VBox topContainer = new VBox(15);
-        topContainer.getChildren().addAll(titleBox, controlArea, scaleInfoBox);
+        // Combine all elements
+        contentContainer.getChildren().addAll(controlPanel, scaleInfoBox, pianoContainer);
 
-        // Create a larger piano in its own container (2 octaves)
-        piano = new PianoKeyboard(3);  // Increased to 3 octaves for better display
+        // Add header and content to main layout
+        root.setTop(header);
+        root.setCenter(contentContainer);
 
-        // Create a scroll pane to handle the larger keyboard with improved styling
-        ScrollPane pianoScrollPane = new ScrollPane(piano);
-        pianoScrollPane.setPrefHeight(320);
-        pianoScrollPane.setFitToHeight(true);
-        pianoScrollPane.setPannable(true); // Allow panning with mouse
-        pianoScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        pianoScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        pianoScrollPane.getStyleClass().add("piano-scroll-pane");
-
-        // Create a legend for the piano
-        HBox legend = createLegend();
-
-        // Add playback controls
-        HBox playbackControls = createPlaybackControls();
-
-        // Combine bottom elements
-        VBox bottomContainer = new VBox(10);
-        bottomContainer.getChildren().addAll(playbackControls, legend);
-        bottomContainer.setAlignment(Pos.CENTER);
-
-        // Add all components to main layout
-        root.setTop(topContainer);
-        root.setCenter(pianoScrollPane);
-        root.setBottom(bottomContainer);
-
-        // Set up stage and show
-        stage.setTitle("Scale Visualizer");
-        stage.setMinWidth(850);
-        stage.setMinHeight(550);
+        // Set up stage properties
+        stage.setTitle("Piano Scale Visualizer");
+        stage.setMinWidth(880);
+        stage.setMinHeight(660);
         stage.setScene(scene);
+
+        // Try to set application icon
+        try {
+            stage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/piano-icon.png")));
+        } catch (Exception e) {
+            // Icon not found, ignore
+        }
 
         // Clean up MIDI resources when application closes
         stage.setOnCloseRequest(e -> MidiPlayer.close());
 
         stage.show();
 
-        // Set default values and generate initial display
+        // Set default values
         currentRootNote = "C";
         currentScaleType = "Major";
-        currentOctave = 4;           // Default octave
-        displayMultiOctave = true;   // Default to multi-octave display
+        currentOctave = 4;
+        displayMultiOctave = true;
         updateScaleDisplay();
 
-        // Add a listener for window focus changes to refresh highlighting if needed
+        // Refresh piano key highlighting when window regains focus
         stage.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal) {
-                // Window regained focus, refresh highlighting
+            if (newVal && currentScaleNotes != null) {
+                // Small delay to ensure UI is ready
                 PauseTransition pause = new PauseTransition(Duration.millis(100));
-                pause.setOnFinished(e -> {
-                    if (currentScaleNotes != null) {
-                        piano.highlightNotes(currentScaleNotes);
-                    }
-                });
+                pause.setOnFinished(e -> piano.refreshAllKeys());
                 pause.play();
             }
         });
     }
 
-    private VBox createControlArea() {
-        // Main container for controls
-        VBox controlArea = new VBox(10);
-        controlArea.setPadding(new Insets(15));
-        controlArea.setStyle("-fx-background-color: #F5F4ED;" +
-                "-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0; " +
-                "-fx-border-radius: 5; -fx-background-radius: 5;");
+    private HBox createHeader() {
+        // Create a stylish header with title
+        HBox header = new HBox();
+        header.setPadding(new Insets(0, 0, 20, 0));
+        header.setAlignment(Pos.CENTER);
 
-        // Add drop shadow effect
-        DropShadow dropShadow = new DropShadow();
-        dropShadow.setColor(Color.rgb(0, 0, 0, 0.2));
-        dropShadow.setOffsetX(0);
-        dropShadow.setOffsetY(1);
-        dropShadow.setRadius(5);
-        controlArea.setEffect(dropShadow);
+        // Try to add a logo image (fallback to text if not found)
+        ImageView logoView = null;
+        try {
+            Image logoImage = new Image(getClass().getResourceAsStream("/icons/piano-logo.png"), 40, 40, true, true);
+            logoView = new ImageView(logoImage);
+        } catch (Exception e) {
+            // Logo not found, we'll use text-only header
+        }
 
-        // Create first row of controls (Key and Scale Type)
-        HBox mainControls = createMainControls();
+        // Create the title text
+        Text titleText = new Text("Piano Scale Visualizer");
+        titleText.getStyleClass().add("title-text");
 
-        // Create second row of controls (Octave and Options)
-        HBox optionControls = createOptionControls();
+        // Create final header layout
+        if (logoView != null) {
+            header.getChildren().addAll(logoView, new Region(), titleText);
+            HBox.setMargin(titleText, new Insets(0, 0, 0, 15));
+        } else {
+            header.getChildren().add(titleText);
+        }
 
-        controlArea.getChildren().addAll(mainControls, optionControls);
-        return controlArea;
+        return header;
     }
 
-    private HBox createMainControls() {
-        HBox controls = new HBox(15);
-        controls.setAlignment(Pos.CENTER);
+    private VBox createControlPanel() {
+        // Create main control panel with modern styling
+        VBox controlPanel = new VBox(20);
+        controlPanel.setPadding(new Insets(25));
 
-        // Initialize comboboxes with proper width
+        // First row: key and scale type selectors
+        HBox mainControlsRow = new HBox(20);
+        mainControlsRow.setAlignment(Pos.CENTER_LEFT);
+
+        // Key selector with label
+        VBox keyBox = new VBox(5);
+        Label keyLabel = new Label("Key");
+        keyLabel.getStyleClass().add("control-label");
+
         keySelector = new ComboBox<>(FXCollections.observableArrayList(
                 "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"));
-        keySelector.setValue("C"); // Default selection
-        keySelector.setPrefWidth(100);
+        keySelector.setValue("C");
+        keySelector.setPrefWidth(120);
         keySelector.getStyleClass().add("combo-box-styled");
+        keySelector.setOnAction(e -> currentRootNote = keySelector.getValue());
 
-        // Get available scales and sort them
+        keyBox.getChildren().addAll(keyLabel, keySelector);
+
+        // Scale type selector with label
+        VBox scaleBox = new VBox(5);
+        Label scaleTypeLabel = new Label("Scale Type");
+        scaleTypeLabel.getStyleClass().add("control-label");
+
         ArrayList<String> scales = new ArrayList<>(ScaleGenerator.getAvailableScales());
         Collections.sort(scales);
 
         scaleTypeSelector = new ComboBox<>(FXCollections.observableArrayList(scales));
-        scaleTypeSelector.setValue("Major"); // Default selection
-        scaleTypeSelector.setPrefWidth(170);
+        scaleTypeSelector.setValue("Major");
+        scaleTypeSelector.setPrefWidth(200);
         scaleTypeSelector.getStyleClass().add("combo-box-styled");
+        scaleTypeSelector.setOnAction(e -> currentScaleType = scaleTypeSelector.getValue());
 
+        scaleBox.getChildren().addAll(scaleTypeLabel, scaleTypeSelector);
+
+        // Generate button
         Button generateButton = new Button("Generate Scale");
+        generateButton.getStyleClass().add("button-primary");
         generateButton.setOnAction(e -> updateScaleDisplay());
-        generateButton.getStyleClass().add("generate-button");
 
-        Label keyLabel = new Label("Key:");
-        keyLabel.getStyleClass().add("control-label");
-        Label scaleTypeLabel = new Label("Scale Type:");
-        scaleTypeLabel.getStyleClass().add("control-label");
+        // Add spacing to push button to the right
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        controls.getChildren().addAll(
-                keyLabel, keySelector,
-                scaleTypeLabel, scaleTypeSelector,
-                generateButton
-        );
+        mainControlsRow.getChildren().addAll(keyBox, scaleBox, spacer, generateButton);
 
-        // Add event handlers to update the display when selections change
-        keySelector.setOnAction(e -> {
-            currentRootNote = keySelector.getValue();
-        });
+        // Second row: octave selector and multi-octave checkbox
+        HBox optionsRow = new HBox(20);
+        optionsRow.setAlignment(Pos.CENTER_LEFT);
 
-        scaleTypeSelector.setOnAction(e -> {
-            currentScaleType = scaleTypeSelector.getValue();
-        });
-
-        generateButton.setOnAction(e -> {
-            updateScaleDisplay();
-        });
-
-        return controls;
-    }
-
-    private HBox createOptionControls() {
-        HBox controls = new HBox(15);
-        controls.setAlignment(Pos.CENTER);
-
-        // Add octave selector
-        octaveSelector = new ComboBox<>(FXCollections.observableArrayList(
-                2, 3, 4, 5, 6, 7));
-        octaveSelector.setValue(4); // Default selection
-        octaveSelector.setPrefWidth(70);
-        octaveSelector.getStyleClass().add("combo-box-styled");
-        octaveSelector.setOnAction(e -> {
-            currentOctave = octaveSelector.getValue();
-        });
-
-        Label octaveLabel = new Label("Octave:");
+        // Octave selector with label
+        VBox octaveBox = new VBox(5);
+        Label octaveLabel = new Label("Octave");
         octaveLabel.getStyleClass().add("control-label");
 
-        // Add multi-octave display checkbox
+        octaveSelector = new ComboBox<>(FXCollections.observableArrayList(
+                2, 3, 4, 5, 6, 7));
+        octaveSelector.setValue(4);
+        octaveSelector.setPrefWidth(120);
+        octaveSelector.getStyleClass().add("combo-box-styled");
+        octaveSelector.setOnAction(e -> currentOctave = octaveSelector.getValue());
+
+        octaveBox.getChildren().addAll(octaveLabel, octaveSelector);
+
+        // Multi-octave checkbox
         multiOctaveCheckBox = new CheckBox("Show Multiple Octaves");
         multiOctaveCheckBox.setSelected(true);
         multiOctaveCheckBox.getStyleClass().add("check-box-styled");
-        multiOctaveCheckBox.setOnAction(e -> {
-            displayMultiOctave = multiOctaveCheckBox.isSelected();
-        });
+        multiOctaveCheckBox.setOnAction(e -> displayMultiOctave = multiOctaveCheckBox.isSelected());
 
-        controls.getChildren().addAll(
-                octaveLabel, octaveSelector,
-                multiOctaveCheckBox
-        );
+        // Align checkbox with combo box
+        VBox checkboxBox = new VBox();
+        checkboxBox.setPadding(new Insets(26, 0, 0, 0));
+        checkboxBox.getChildren().add(multiOctaveCheckBox);
 
-        return controls;
+        optionsRow.getChildren().addAll(octaveBox, checkboxBox);
+
+        // Add both rows to the control panel
+        controlPanel.getChildren().addAll(mainControlsRow, optionsRow);
+
+        return controlPanel;
+    }
+
+    private HBox createScaleInfoBox() {
+        // Create scale information display
+        scaleInfoText = new Text();
+        scaleInfoText.getStyleClass().add("scale-info-text");
+
+        HBox scaleInfoBox = new HBox(scaleInfoText);
+        scaleInfoBox.getStyleClass().add("scale-info-box");
+        scaleInfoBox.setAlignment(Pos.CENTER);
+        scaleInfoBox.setPadding(new Insets(16));
+        scaleInfoBox.setMaxWidth(Double.MAX_VALUE);
+
+        return scaleInfoBox;
+    }
+
+    private VBox createPianoContainer() {
+        // Create piano container with 3 octaves
+        piano = new PianoKeyboard(3);
+
+        // Create scroll pane for piano
+        ScrollPane pianoScrollPane = new ScrollPane(piano);
+        pianoScrollPane.setPrefHeight(300);
+        pianoScrollPane.setFitToHeight(true);
+        pianoScrollPane.setPannable(true);
+        pianoScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        pianoScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        pianoScrollPane.getStyleClass().add("piano-scroll-pane");
+
+        // Create playback controls
+        HBox playbackControls = createPlaybackControls();
+        playbackControls.getStyleClass().add("playback-controls");
+
+        // Create legend
+        HBox legend = createLegend();
+        legend.getStyleClass().add("legend-container");
+
+        // Combine all elements
+        VBox pianoContainer = new VBox(15);
+        pianoContainer.getChildren().addAll(pianoScrollPane, playbackControls, legend);
+
+        return pianoContainer;
     }
 
     private HBox createPlaybackControls() {
-        HBox controls = new HBox(15);
-        controls.setPadding(new Insets(10, 0, 0, 0));
+        // Create playback controls with modern styling
+        HBox controls = new HBox(20);
         controls.setAlignment(Pos.CENTER);
 
-        // Play scale button
+        // Play button with icon
         playScaleButton = new Button("Play Scale");
-        playScaleButton.getStyleClass().add("play-button");
+        playScaleButton.getStyleClass().add("button-primary");
+
+        // Try to add a play icon
+        try {
+            ImageView playIcon = new ImageView(new Image(getClass().getResourceAsStream("/icons/play-icon.png"), 16, 16, true, true));
+            playScaleButton.setGraphic(playIcon);
+        } catch (Exception e) {
+            // Icon not found, use text only
+        }
+
         playScaleButton.setOnAction(e -> playCurrentScale());
 
-        // Slider for playback speed
-        Label tempoLabel = new Label("Tempo:");
+        // Tempo slider with label
+        VBox tempoBox = new VBox(5);
+        tempoBox.setAlignment(Pos.CENTER);
+
+        Label tempoLabel = new Label("Tempo: 120 BPM");
         tempoLabel.getStyleClass().add("control-label");
-        Slider tempoSlider = new Slider(60, 240, 120);
-        tempoSlider.setPrefWidth(200);
-        tempoSlider.setShowTickMarks(true);
-        tempoSlider.setShowTickLabels(true);
-        tempoSlider.setMajorTickUnit(60);
-        tempoSlider.setMinorTickCount(1);
-        tempoSlider.setBlockIncrement(10);
 
-        controls.getChildren().addAll(
-                playScaleButton,
-                tempoLabel, tempoSlider
-        );
+        tempoSlider = new Slider(60, 240, 120);
+        tempoSlider.setPrefWidth(220);
+        tempoSlider.getStyleClass().add("slider");
 
+        // Update tempo label when slider changes
+        tempoSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            int tempo = newVal.intValue();
+            tempoLabel.setText(String.format("Tempo: %d BPM", tempo));
+        });
+
+        tempoBox.getChildren().addAll(tempoLabel, tempoSlider);
+
+        controls.getChildren().addAll(playScaleButton, tempoBox);
         return controls;
     }
 
     private HBox createLegend() {
-        HBox legend = new HBox(20);
-        legend.setPadding(new Insets(15, 0, 5, 0));
+        // Create legend for key colors
+        HBox legend = new HBox(30);
         legend.setAlignment(Pos.CENTER);
 
         // Regular key indicator
         Rectangle regularKey = new Rectangle(20, 20);
         regularKey.setFill(Color.WHITE);
         regularKey.setStroke(Color.GRAY);
+        regularKey.getStyleClass().add("legend-box");
+
         Text regularText = new Text("Regular Key");
+        regularText.getStyleClass().add("legend-text");
+
+        HBox regularItem = new HBox(8, regularKey, regularText);
+        regularItem.setAlignment(Pos.CENTER);
+        regularItem.getStyleClass().add("legend-item");
 
         // Scale note indicator
         Rectangle scaleKey = new Rectangle(20, 20);
-        scaleKey.setFill(Color.DODGERBLUE);
+        scaleKey.setFill(Color.valueOf("#4cc9f0"));
         scaleKey.setStroke(Color.GRAY);
+        scaleKey.getStyleClass().add("legend-box");
+
         Text scaleText = new Text("Scale Note");
+        scaleText.getStyleClass().add("legend-text");
 
-        // Add indicators to legend
-        legend.getChildren().addAll(
-                new HBox(8, regularKey, regularText),
-                new HBox(8, scaleKey, scaleText)
-        );
+        HBox scaleItem = new HBox(8, scaleKey, scaleText);
+        scaleItem.setAlignment(Pos.CENTER);
+        scaleItem.getStyleClass().add("legend-item");
 
+        legend.getChildren().addAll(regularItem, scaleItem);
         return legend;
     }
 
