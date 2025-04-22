@@ -40,11 +40,6 @@ public class ScalePlayer {
                     Thread.sleep(noteDuration);
                 }
 
-                // Play root note again at the end (if there are any notes)
-                if (!orderedNotes.isEmpty()) {
-                    Thread.sleep(100);
-                    MidiPlayer.playNote(calculateMidiNote(orderedNotes.get(0)));
-                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

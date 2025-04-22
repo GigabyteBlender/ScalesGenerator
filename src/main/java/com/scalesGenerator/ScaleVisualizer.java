@@ -11,13 +11,11 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.text.Text;
-import javafx.scene.effect.DropShadow;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import java.util.Set;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -122,7 +120,7 @@ public class ScaleVisualizer extends Application {
         // Try to add a logo image (fallback to text if not found)
         ImageView logoView = null;
         try {
-            Image logoImage = new Image(getClass().getResourceAsStream("/icons/piano-logo.png"), 40, 40, true, true);
+            Image logoImage = new Image(getClass().getResourceAsStream("/icons/piano-icon.png"), 40, 40, true, true);
             logoView = new ImageView(logoImage);
         } catch (Exception e) {
             // Logo not found, we'll use text-only header
@@ -202,8 +200,7 @@ public class ScaleVisualizer extends Application {
         Label octaveLabel = new Label("Octave");
         octaveLabel.getStyleClass().add("control-label");
 
-        octaveSelector = new ComboBox<>(FXCollections.observableArrayList(
-                2, 3, 4, 5, 6, 7));
+        octaveSelector = new ComboBox<>(FXCollections.observableArrayList(4, 5));
         octaveSelector.setValue(4);
         octaveSelector.setPrefWidth(120);
         octaveSelector.getStyleClass().add("combo-box-styled");
@@ -414,54 +411,27 @@ public class ScaleVisualizer extends Application {
         }
     }
 
+    // Replace the playCurrentScale() method in ScaleVisualizer.java with this fixed version:
+
     private void playCurrentScale() {
         if (currentScaleNotes != null && !currentScaleNotes.isEmpty()) {
             // Disable play button while playing
             playScaleButton.setDisable(true);
 
-            // Play scale in separate thread
-            new Thread(() -> {
-                try {
-                    // Create ordered list of notes
-                    List<String> orderedNotes = new ArrayList<>(currentScaleNotes);
+            // Get current tempo from slider
+            int tempo = (int) tempoSlider.getValue();
 
-                    Collections.sort(orderedNotes, (a, b) -> {
-                        int octaveA = Integer.parseInt(a.replaceAll("\\D", ""));
-                        int octaveB = Integer.parseInt(b.replaceAll("\\D", ""));
+            // Call the ScalePlayer to play the scale with proper ordering
+            ScalePlayer.playScale(currentScaleNotes, tempo);
 
-                        if (octaveA != octaveB) {
-                            return Integer.compare(octaveA, octaveB);
-                        }
+            // Re-enable play button after a delay based on the tempo
+            // Approximate how long it will take to play the scale
+            int noteCount = currentScaleNotes.size() + 1; // +1 for final root note
+            int totalDuration = (noteCount * 60000 / tempo) / 2 + 500; // in milliseconds
 
-                        // Same octave, get note value
-                        String noteA = a.replaceAll("\\d", "");
-                        String noteB = b.replaceAll("\\D", "");
-
-                        int valueA = getNoteValue(noteA);
-                        int valueB = getNoteValue(noteB);
-
-                        return Integer.compare(valueA, valueB);
-                    });
-
-                    // Play each note in sequence
-                    for (String note : orderedNotes) {
-                        int midiNote = calculateMidiNote(note);
-                        MidiPlayer.playNote(midiNote);
-                        Thread.sleep(350); // Note duration
-                    }
-
-                    // Play root note again at the end
-                    Thread.sleep(200);
-                    String rootWithOctave = currentRootNote + currentOctave;
-                    MidiPlayer.playNote(calculateMidiNote(rootWithOctave));
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    // Re-enable play button
-                    javafx.application.Platform.runLater(() -> playScaleButton.setDisable(false));
-                }
-            }).start();
+            PauseTransition pause = new PauseTransition(Duration.millis(totalDuration));
+            pause.setOnFinished(e -> playScaleButton.setDisable(false));
+            pause.play();
         }
     }
 

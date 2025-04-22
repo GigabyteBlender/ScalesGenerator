@@ -57,7 +57,7 @@
 }
 
 /* Enhanced Generate Button Style */
-.generate-button {
+.button-primary {
     -fx-background-color: linear-gradient(to bottom, #5e9fff, #3b7ddc);
     -fx-text-fill: white;
     -fx-font-weight: normal;
@@ -72,18 +72,18 @@
     -fx-border-width: 0 0 2 0;
 }
 
-.generate-button:hover {
+.button-primary:hover {
     -fx-background-color: linear-gradient(to bottom, #70aaff, #4c8de3);
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 0, 2);
 }
 
-.generate-button:pressed {
+.button-primary:pressed {
     -fx-background-color: #3b7ddc;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 2, 0, 0, 0);
     -fx-translate-y: 1px;
 }
 
-.generate-button:focused {
+.button-primary:focused {
     -fx-border-color: #2d6dc7;
     -fx-border-width: 0 0 2 0;
     -fx-effect: dropshadow(gaussian, rgba(59, 125, 220, 0.4), 5, 0, 0, 0);

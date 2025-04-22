@@ -9,8 +9,5 @@
         <module name="scalesGenerator" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="scalesGenerator" target="17" />
-    </bytecodeTargetLevel>
   </component>
 </project>
